@@ -56,6 +56,7 @@
     "test:unit": "cross-env NODE_ENV=test NODE_OPTIONS='--import tsx' mocha './test/**/*.test.ts'"
   },
   "dependencies": {
+    "@anza-xyz/solana-rpc-get-stake-activation": "^1.0.1",
     "@babel/runtime": "^7.25.0",
     "@noble/curves": "^1.4.2",
     "@noble/hashes": "^1.4.0",
@@ -122,9 +123,9 @@
     "sinon": "^19.0.2",
     "sinon-chai": "^4.0.0",
     "start-server-and-test": "^2.0.4",
-    "typescript": "^5.5.4",
     "tslib": "^2.6.3",
     "tsx": "^4.16.2",
-    "typedoc": "^0.26.5"
+    "typedoc": "^0.26.5",
+    "typescript": "^5.5.4"
   }
 }

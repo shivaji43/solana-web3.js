@@ -28,6 +28,7 @@ import {
 import type {Struct} from 'superstruct';
 import RpcClient from 'jayson/lib/client/browser';
 import {JSONRPCError} from 'jayson';
+import {getStakeActivation} from '@anza-xyz/solana-rpc-get-stake-activation';
 
 import {EpochSchedule} from './epoch-schedule';
 import {SendTransactionError, SolanaJSONRPCError} from './errors';
@@ -1969,20 +1970,6 @@ const KeyedParsedAccountInfoResult = pick({
 });
 
 /**
- * @internal
- */
-const StakeActivationResult = pick({
-  state: union([
-    literal('active'),
-    literal('inactive'),
-    literal('activating'),
-    literal('deactivating'),
-  ]),
-  active: number(),
-  inactive: number(),
-});
-
-/**
  * Expected JSON RPC response for the "getConfirmedSignaturesForAddress2" message
  */
 
@@ -3692,27 +3679,22 @@ export class Connection {
     commitmentOrConfig?: Commitment | GetStakeActivationConfig,
     epoch?: number,
   ): Promise<StakeActivationData> {
-    const {commitment, config} =
-      extractCommitmentFromConfig(commitmentOrConfig);
-    const args = this._buildArgs(
-      [publicKey.toBase58()],
-      commitment,
-      undefined /* encoding */,
-      {
-        ...config,
-        epoch: epoch != null ? epoch : config?.epoch,
-      },
-    );
-
-    const unsafeRes = await this._rpcRequest('getStakeActivation', args);
-    const res = create(unsafeRes, jsonRpcResult(StakeActivationResult));
-    if ('error' in res) {
-      throw new SolanaJSONRPCError(
-        res.error,
-        `failed to get Stake Activation ${publicKey.toBase58()}`,
+    if (epoch) {
+      throw new Error(
+        'The capability to fetch stake activation for a specific `epoch` is not longer offered by the network.',
       );
     }
-    return res.result;
+
+    const {status, active, inactive} = await getStakeActivation(
+      this,
+      publicKey,
+    );
+
+    return {
+      state: status as StakeActivationData['state'],
+      active: Number(active),
+      inactive: Number(inactive),
+    };
   }
 
   /**
